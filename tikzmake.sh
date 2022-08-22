@@ -4,11 +4,13 @@
 python $1.py 
 pdflatex $1.tex
 
-rm *.aux *.log *.vscodeLog
+rm *.aux *.log
 rm *.tex
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     open $1.pdf
-else
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     xdg-open $1.pdf
+else
+    start $1.pdf
 fi
