@@ -107,6 +107,9 @@ def block_ConvReluPool(name, bottom, top, s_filer=256, n_filer=64, offset="(1,0,
 
 def block_ConvInceptionPool(name, bottom, top, s_filer=256, n_filer=(64, 128), offset="(1,0,0)",
                             size=((32, 32, 3.5), (32, 32, 5)), opacity=0.5, label='1'):
+    if isinstance(label, str):
+        label = (label,)*2
+
     return [
         to_Conv(
             name="{}-c".format(name),
@@ -117,7 +120,7 @@ def block_ConvInceptionPool(name, bottom, top, s_filer=256, n_filer=(64, 128), o
             width=size[0][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="C{}".format(label)
+            caption="C{}".format(label[0])
         ),
         to_Inception(
             name="{}-i".format(name),
@@ -127,7 +130,7 @@ def block_ConvInceptionPool(name, bottom, top, s_filer=256, n_filer=(64, 128), o
             width=size[1][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="I{}".format(label)
+            caption="I{}".format(label[1])
         ),
         to_Pool(
             name="{}".format(top),
@@ -147,6 +150,9 @@ def block_ConvInceptionPool(name, bottom, top, s_filer=256, n_filer=(64, 128), o
 
 def block_ConvInception(name, bottom, s_filer=256, n_filer=(64, 128), offset="(1,0,0)",
                         size=((32, 32, 3.5), (32, 32, 5)), label='1'):
+    if isinstance(label, str):
+        label = (label,)*2
+
     return [
         to_Conv(
             name="{}-c".format(name),
@@ -157,7 +163,7 @@ def block_ConvInception(name, bottom, s_filer=256, n_filer=(64, 128), offset="(1
             width=size[0][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="C{}".format(label)
+            caption="C{}".format(label[0])
         ),
         to_Inception(
             name="{}-i".format(name),
@@ -167,7 +173,7 @@ def block_ConvInception(name, bottom, s_filer=256, n_filer=(64, 128), offset="(1
             width=size[1][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="I{}".format(label)
+            caption="I{}".format(label[1])
         ),
         to_connection(
             "{}".format(bottom),
