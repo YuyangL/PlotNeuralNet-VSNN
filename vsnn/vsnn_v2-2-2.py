@@ -64,30 +64,33 @@ arch = [
     # Decoder
     # EL3
     *block_UnconvSkipConvInception(name="el3", bottom="cl4-i", s_filer="40x20",
-                                   n_filer=(cl3['incept']*2, el3['conv'], el3['incept']),
+                                   n_filer=(cl3['incept'], cl3['incept'] * 2, el3['conv'], el3['incept']),
                                    offset="(2, 5, 0)",
-                                   size=((5, 10, 28), (5, 10, 12), (5, 10, 11)), label=("3-1", "3-6", "3-6")),
+                                   size=((5, 10, 14), (5, 10, 28), (5, 10, 12), (5, 10, 11)),
+                                   label=("3-1", "3-1", "3-6", "3-6")),
     to_skip(of='cl3-i', to='el3-skip', pos=5),
 
     # EL2
     *block_UnconvSkipConvInception(name="el2", bottom="el3-i", s_filer="80x40",
-                                   n_filer=(cl2['incept']*2, el2['conv'], el2['incept']),
+                                   n_filer=(cl2['incept'], cl2['incept'] * 2, el2['conv'], el2['incept']),
                                    offset="(3, 5, 0)",
-                                   size=((10, 20, 22), (10, 20, 9), (10, 20, 8)), label=("2-2", "2-7", "2-7")),
+                                   size=((10, 20, 11), (10, 20, 22), (10, 20, 9), (10, 20, 8)),
+                                   label=("2-2", "2-2", "2-7", "2-7")),
     to_skip(of='cl2-i', to='el2-skip', pos=4),
 
     # EL1
     *block_UnconvSkipConvInception(name="el1", bottom="el2-i", s_filer="160x80",
-                                   n_filer=(cl1['incept']*2, el1['conv'], el1['incept']),
+                                   n_filer=(cl1['incept'], cl1['incept'] * 2, el1['conv'], el1['incept']),
                                    offset="(4, 5, 0)",
-                                   size=((20, 40, 16), (20, 40, 6), (20, 40, 5)), label=("1-3", "1-8", "1-8")),
+                                   size=((20, 40, 8), (20, 40, 16), (20, 40, 6), (20, 40, 5)),
+                                   label=("1-3", "1-3", "1-8", "1-8")),
     to_skip(of='cl1-i', to='el1-skip', pos=3),
 
     # EL0
     *block_UnconvSkipConv(name="el0", bottom="el1-i", s_filer="320x160",
-                          n_filer=(cl0['incept']*2, el0['conv']),
+                          n_filer=(cl0['incept'], cl0['incept'] * 2, el0['conv']),
                           offset="(5, 5, 0)",
-                          size=((40, 80, 10), (40, 80, 4)), label=("0-4", "0-9")),
+                          size=((40, 80, 5), (40, 80, 10), (40, 80, 4)), label=("0-4", "0-4", "0-9")),
     to_skip(of='cl0-i', to='el0-skip', pos=2),
     to_Conv(name='el0-c2', s_filer="320x160", n_filer=el0['conv 1x1'], offset="(6,0,0)", to="(el0-c-east)",
             width=1, height=40, depth=80, caption='C0-10'),

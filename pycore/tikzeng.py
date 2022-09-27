@@ -151,12 +151,14 @@ def to_Pool(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=32, depth=32, 
 """
 
 # unpool4, 
-def to_UnPool(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=32, depth=32, opacity=0.5, caption=" "):
+def to_UnPool(name, offset="(0,0,0)", to="(0,0,0)", width=1, height=32, depth=32, opacity=0.5, caption=" ",
+              n_filer=""):
     return r"""
 \pic[shift={ """+ offset +""" }] at """+ to +""" 
     {Box={
         name="""+ name +r""",
         caption="""+ caption +r""",
+        xlabel={{""" + str(n_filer) + r""", }},
         fill=\UnpoolColor,
         opacity="""+ str(opacity) +""",
         height="""+ str(height) +""",
