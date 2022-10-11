@@ -183,7 +183,8 @@ def block_ConvInception(name, bottom, s_filer=256, n_filer=(64, 128), offset="(1
 
 
 def block_Inceptionx3Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128), offset="(1,0,0)",
-                          size=((32, 32, 3.5), (32, 32, 5), (32, 32, 5)), label='1', pool_width=1):
+                          size=((32, 32, 3.5), (32, 32, 5), (32, 32, 5)), label='1', pool_width=1,
+                          gap_pool=False):
     if isinstance(label, str):
         label = (label,) * 99
 
@@ -197,7 +198,7 @@ def block_Inceptionx3Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128)
             width=size[0][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="C{}".format(label[0])
+            caption="I{}".format(label[0])
         ),
         to_Inception(
             name="{}-i2".format(name),
@@ -224,8 +225,8 @@ def block_Inceptionx3Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128)
             offset="(0,0,0)",
             to="({}-i3-east)".format(name),
             width=pool_width,
-            height=size[2][0] - int(size[2][0] / 2),
-            depth=size[2][1] - int(size[2][0] / 2),
+            height=size[2][0] - int(size[2][0] / 2) if not gap_pool else 2,
+            depth=size[2][1] - int(size[2][0] / 2) if not gap_pool else 2,
             opacity=.5,
         ),
         to_connection(
@@ -236,7 +237,8 @@ def block_Inceptionx3Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128)
 
 
 def block_Inceptionx4Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128, 128), offset="(1,0,0)",
-                          size=((32, 32, 3.5), (32, 32, 5), (32, 32, 5), (32, 32, 5)), label='1', pool_width=1):
+                          size=((32, 32, 3.5), (32, 32, 5), (32, 32, 5), (32, 32, 5)), label='1', pool_width=1,
+                          gap_pool=False):
     if isinstance(label, str):
         label = (label,) * 99
 
@@ -250,7 +252,7 @@ def block_Inceptionx4Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128,
             width=size[0][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="C{}".format(label[0])
+            caption="I{}".format(label[0])
         ),
         to_Inception(
             name="{}-i2".format(name),
@@ -287,8 +289,8 @@ def block_Inceptionx4Pool(name, bottom, top, s_filer=256, n_filer=(64, 128, 128,
             offset="(0,0,0)",
             to="({}-i4-east)".format(name),
             width=pool_width,
-            height=size[3][0] - int(size[3][0] / 2),
-            depth=size[3][1] - int(size[3][0] / 2),
+            height=size[3][0] - int(size[3][0] / 2) if not gap_pool else 2,
+            depth=size[3][1] - int(size[3][0] / 2) if not gap_pool else 2,
             opacity=.5,
         ),
         to_connection(
@@ -332,6 +334,7 @@ def block_Inceptionx2(name, bottom, s_filer=256, n_filer=(64, 128), offset="(1,0
         )
     ]
 
+
 def block_Inceptionx4(name, bottom, s_filer=256, n_filer=(64, 128, 128, 128), offset="(1,0,0)",
                       size=((32, 32, 3.5), (32, 32, 5), (32, 32, 5), (32, 32, 5)),
                       label='1'):
@@ -348,7 +351,7 @@ def block_Inceptionx4(name, bottom, s_filer=256, n_filer=(64, 128, 128, 128), of
             width=size[0][2],
             height=size[0][0],
             depth=size[0][1],
-            caption="C{}".format(label[0])
+            caption="I{}".format(label[0])
         ),
         to_Inception(
             name="{}-i2".format(name),
@@ -529,6 +532,53 @@ def block_UnconvSkipInceptionx3(name, bottom, s_filer=256, n_filer=(64, 64, 64, 
     ]
 
 
+def block_ConvSkipInceptionx3(name, bottom, s_filer=256, n_filer=(64, 64, 64, 64, 64), offset="(1,0,0)",
+                              size=((32, 32, 5), (32, 32, 3.5), (32, 32, 3.5), (32, 32, 3.5), (32, 32, 3.5)),
+                              opacity=0.5, label=('1', '1', '1', '1', '1')):
+    return [
+        to_Conv(name='{}-c'.format(name), offset=offset, to="({}-east)".format(bottom), s_filer="",
+                n_filer=str(n_filer[0]), width=size[0][2], height=size[0][0], depth=size[0][1],
+                caption="C{}".format(label[0])),
+        to_ConvRes(name='{}-skip'.format(name), offset="(0,0,0)", to="({}-c-east)".format(name),
+                   s_filer="", n_filer=str(n_filer[1]), width=size[1][2], height=size[1][0], depth=size[1][1],
+                   opacity=opacity, caption="SC{}".format(label[1])),
+        to_Inception(
+            name="{}-i1".format(name),
+            s_filer="",
+            n_filer=n_filer[2],
+            to="({}-skip-east)".format(name),
+            width=size[2][2],
+            height=size[2][0],
+            depth=size[2][1],
+            caption="I{}".format(label[2])
+        ),
+        to_Inception(
+            name="{}-i2".format(name),
+            s_filer="",
+            n_filer=n_filer[3],
+            to="({}-i1-east)".format(name),
+            width=size[3][2],
+            height=size[3][0],
+            depth=size[3][1],
+            caption="I{}".format(label[3])
+        ),
+        to_Inception(
+            name="{}-i3".format(name),
+            s_filer=str(s_filer),
+            n_filer=n_filer[4],
+            to="({}-i2-east)".format(name),
+            width=size[4][2],
+            height=size[4][0],
+            depth=size[4][1],
+            caption="I{}".format(label[4])
+        ),
+        to_connection(
+            "{}".format(bottom),
+            "{}-c".format(name)
+        )
+    ]
+
+
 def block_UnconvSkipInceptionx4(name, bottom, s_filer=256, n_filer=(64, 64, 64, 64, 64, 64), offset="(1,0,0)",
                                 size=((32, 32, 5), (32, 32, 3.5), (32, 32, 3.5), (32, 32, 3.5), (32, 32, 3.5),
                                       (32, 32, 5)),
@@ -583,6 +633,64 @@ def block_UnconvSkipInceptionx4(name, bottom, s_filer=256, n_filer=(64, 64, 64, 
         to_connection(
             "{}".format(bottom),
             "{}-unpool".format(name)
+        )
+    ]
+
+
+def block_ConvSkipInceptionx4(name, bottom, s_filer=256, n_filer=(64, 64, 64, 64, 64, 64), offset="(1,0,0)",
+                              size=((32, 32, 5), (32, 32, 3.5), (32, 32, 3.5), (32, 32, 3.5), (32, 32, 3.5),
+                                    (32, 32, 5)),
+                              opacity=0.5, label=('1', '1', '1', '1', '1', '1')):
+    return [
+        to_Conv(name='{}-c'.format(name), offset=offset, to="({}-east)".format(bottom), s_filer="",
+                n_filer=str(n_filer[0]), width=size[0][2], height=size[0][0], depth=size[0][1],
+                caption="C{}".format(label[0])),
+        to_ConvRes(name='{}-skip'.format(name), offset="(0,0,0)", to="({}-c-east)".format(name),
+                   s_filer="", n_filer=str(n_filer[1]), width=size[1][2], height=size[1][0], depth=size[1][1],
+                   opacity=opacity, caption="SC{}".format(label[1])),
+        to_Inception(
+            name="{}-i1".format(name),
+            s_filer="",
+            n_filer=n_filer[2],
+            to="({}-skip-east)".format(name),
+            width=size[2][2],
+            height=size[2][0],
+            depth=size[2][1],
+            caption="I{}".format(label[2])
+        ),
+        to_Inception(
+            name="{}-i2".format(name),
+            s_filer="",
+            n_filer=n_filer[3],
+            to="({}-i1-east)".format(name),
+            width=size[3][2],
+            height=size[3][0],
+            depth=size[3][1],
+            caption="I{}".format(label[3])
+        ),
+        to_Inception(
+            name="{}-i3".format(name),
+            s_filer='',
+            n_filer=n_filer[4],
+            to="({}-i2-east)".format(name),
+            width=size[4][2],
+            height=size[4][0],
+            depth=size[4][1],
+            caption="I{}".format(label[4])
+        ),
+        to_Inception(
+            name="{}-i4".format(name),
+            s_filer=str(s_filer),
+            n_filer=n_filer[5],
+            to="({}-i3-east)".format(name),
+            width=size[5][2],
+            height=size[5][0],
+            depth=size[5][1],
+            caption="I{}".format(label[5])
+        ),
+        to_connection(
+            "{}".format(bottom),
+            "{}-c".format(name)
         )
     ]
 
